@@ -40,6 +40,7 @@ prompt = ChatPromptTemplate.from_messages([
     ("human", "{input}"),
 ])
 
+combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
 # Geçmiş mesajları göster
 for message in st.session_state.messages:
     if isinstance(message, HumanMessage):
@@ -56,27 +57,22 @@ if used_question:
         st.markdown(used_question)
         st.session_state.messages.append(HumanMessage(content=used_question))
 
+    
+    rga_chain = create_retrieval_chain(retriever, combine_chain)
+    print("işlem bitti")
 
+    # Sorguyu çalıştır
+    response = rga_chain.invoke({"input": used_question})
 
+    # Cevabı güvenli şekilde al
+    if isinstance(response, dict):
+        cevap = response.get("answer", "⚠️ Modelden yanıt alınamadı.")
+    else:
+        cevap = str(response) if response else "⚠️ Modelden boş yanıt döndü."
 
-
-
-combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
-rga_chain = create_retrieval_chain(retriever, combine_chain)
-print("işlem bitti")
-
-# Sorguyu çalıştır
-response = rga_chain.invoke({"input": used_question})
-
-# Cevabı güvenli şekilde al
-if isinstance(response, dict):
-    cevap = response.get("answer", "⚠️ Modelden yanıt alınamadı.")
-else:
-    cevap = str(response) if response else "⚠️ Modelden boş yanıt döndü."
-
-with st.chat_message("assistant"):
-    st.markdown(cevap)
-    st.session_state.messages.append(AIMessage(content=cevap))
+    with st.chat_message("assistant"):
+        st.markdown(cevap)
+        st.session_state.messages.append(AIMessage(content=cevap))
 
 
 
