@@ -20,7 +20,10 @@ from langchain import hub
 from langchain.chains import create_retrieval_chain
 
 print(f"LangChain version: {langchain.__version__}") # 0.3.27
-embeddings = OllamaEmbeddings(model="mxbai-embed-large:latest")
+# embeddings = OllamaEmbeddings(model="mxbai-embed-large:latest")
+
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
 
 api_key = os.environ.get("oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
 db_path = "vectordb"
