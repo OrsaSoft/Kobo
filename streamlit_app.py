@@ -50,24 +50,24 @@ for message in st.session_state.messages:
         with st.chat_message("assistant"):
             st.markdown(message.content)
 
-prompt = st.chat_input("Your question :")
+used_question = st.chat_input("Your question :")
 
-if prompt:
+if used_question:
     with st.chat_message("user"):
-        st.markdown(prompt)
-        st.session_state.messages.append(HumanMessage(content=prompt))
+        st.markdown(used_question)
+        st.session_state.messages.append(HumanMessage(content=used_question))
 
 
 
 
 
 
-combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
+combine_chain = create_stuff_documents_chain(llm=llm, prompt=used_question)
 rga_chain = create_retrieval_chain(retriever, combine_chain)
 print("işlem bitti")
 
 # Sorguyu çalıştır
-response = rga_chain.invoke({"input": prompt})
+response = rga_chain.invoke({"input": used_question})
 
 # Süreyi bitir
 end = tm.time()
@@ -78,10 +78,10 @@ cevap = response["answer"]
 with st.chat_message("assistant"):
     st.markdown(cevap)
     st.session_state.messages.append(AIMessage(content=cevap))
-    
 
 
 
-# What does the US government expect of Bytedance ?
+
+
 
 
