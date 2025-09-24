@@ -14,13 +14,15 @@ import langchain
 from langchain_community.embeddings import OllamaEmbeddings
 from hashlib import sha256
 import os
+from langchain.embeddings import HuggingFaceEmbeddings
+from langchain_mistralai import ChatMistralAI
 
 
 
 
 print(f"LangChain version: {langchain.__version__}") # 0.3.27
 
-embeddings = OllamaEmbeddings(model="mxbai-embed-large:latest")
+embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
 
 db_path = "./vectordb"
 
@@ -30,7 +32,7 @@ vector_db = Chroma(persist_directory=db_path,embedding_function=embeddings)
 
 # 6️⃣ Retriever ve LLM kısmı
 retriever = vector_db.as_retriever(search_kwargs={"k" : 100})
-llm = ChatOllama(model="llama3")
+llm = ChatMistralAI(model_name="magistral-small-2509",api_key="oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
 prompt = ChatPromptTemplate.from_messages([
     ("system", "Sen bir yapay zeka asistanısın. Bu Belgeler hakkında sana soru sorulacak {context}"),
     ("human", "{input}"),
