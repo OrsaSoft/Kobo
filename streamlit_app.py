@@ -68,11 +68,11 @@ print("işlem bitti")
 # Sorguyu çalıştır
 response = rga_chain.invoke({"input": used_question})
 
-# Süreyi bitir
-end = tm.time()
-
-
-cevap = response["answer"]
+# Cevabı güvenli şekilde al
+if isinstance(response, dict):
+    cevap = response.get("answer", "⚠️ Modelden yanıt alınamadı.")
+else:
+    cevap = str(response) if response else "⚠️ Modelden boş yanıt döndü."
 
 with st.chat_message("assistant"):
     st.markdown(cevap)
