@@ -1,5 +1,5 @@
-from sqlalchemy.orm import sessionmaker
-from sqlalchemy import create_engine, select,not_
+# from sqlalchemy.orm import sessionmaker
+# from sqlalchemy import create_engine, select,not_
 import time as tm
 from langchain_ollama import OllamaEmbeddings, ChatOllama
 from langchain.vectorstores import Chroma
