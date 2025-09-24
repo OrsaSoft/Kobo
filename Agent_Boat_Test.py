@@ -9,7 +9,6 @@ from langchain.chains import create_retrieval_chain
 from langchain.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 from langchain.agents.agent_toolkits import create_retriever_tool
-from Models import InfoofUrls, ParamEtiketlers, UrlEtiketlers,UrlOzet,TakipTablo
 import langchain
 from langchain_community.embeddings import OllamaEmbeddings
 from hashlib import sha256
