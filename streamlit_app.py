@@ -16,7 +16,7 @@ from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_mistralai import ChatMistralAI
 import streamlit as st 
 from langchain_core.messages import HumanMessage,AIMessage,SystemMessage
-
+from langchain.chains import ConversationalRetrievalChain
 
 print(f"LangChain version: {langchain.__version__}") # 0.3.27
 
@@ -35,12 +35,9 @@ if "messages" not in st.session_state:
 # 6️⃣ Retriever ve LLM kısmı
 retriever = vector_db.as_retriever(search_kwargs={"k" : 100})
 llm = ChatMistralAI(model_name="magistral-small-2509",api_key="oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
-prompt = ChatPromptTemplate.from_messages([
-    ("system", "Sen bir yapay zeka asistanısın. Bu Belgeler hakkında sana soru sorulacak {context}"),
-    ("human", "{input}"),
-])
 
-combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
+
+
 # Geçmiş mesajları göster
 for message in st.session_state.messages:
     if isinstance(message, HumanMessage):
@@ -57,18 +54,14 @@ if used_question:
         st.markdown(used_question)
         st.session_state.messages.append(HumanMessage(content=used_question))
 
+    qa_chain = ConversationalRetrievalChain.from_llm(llm = llm,retriever = retriever)
+
+    result = qa_chain({"question": used_question,"chat_history": st.session_state.messages})
+
     
-    rga_chain = create_retrieval_chain(retriever, combine_chain)
     print("işlem bitti")
 
-    # Sorguyu çalıştır
-    response = rga_chain.invoke({"input": used_question})
-
-    # Cevabı güvenli şekilde al
-    if isinstance(response, dict):
-        cevap = response.get("answer", "⚠️ Modelden yanıt alınamadı.")
-    else:
-        cevap = str(response) if response else "⚠️ Modelden boş yanıt döndü."
+    cevap = result["answer"]
 
     with st.chat_message("assistant"):
         st.markdown(cevap)
