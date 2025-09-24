@@ -58,6 +58,8 @@ while True:
         print("Content:", doc.page_content[:500])  # İlk 500 karakterini göster
         print("Metadata:", doc.metadata)
 
+    # vectordb\aa1bf15c-2132-4fc5-8849-730b2e89bbe6\data_level0.bin
+    # vectordb\sqlite3
 
     # Sorguyu çalıştır
     response = rga_chain.invoke({"input": mesaj})
