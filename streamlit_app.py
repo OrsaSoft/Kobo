@@ -15,62 +15,58 @@ from hashlib import sha256
 import os
 from langchain.embeddings import HuggingFaceEmbeddings
 from langchain_mistralai import ChatMistralAI
+import streamlit as st 
 
 
 
+# ----------------------
+# Başlık ve açıklama
+# ----------------------
+st.title("📚 AI Chatbot with LangChain + Mistral")
+st.write("Belgeler üzerinde sorular sorabilirsiniz. Çıkmak için 'çık' yazın.")
 
-print(f"LangChain version: {langchain.__version__}") # 0.3.27
-
+# ----------------------
+# LangChain ve Vektör DB ayarları
+# ----------------------
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
-
 db_path = "./vectordb"
+vector_db = Chroma(persist_directory=db_path, embedding_function=embeddings)
 
-vector_db = Chroma(persist_directory=db_path,embedding_function=embeddings)
+retriever = vector_db.as_retriever(search_kwargs={"k": 100})
 
+llm = ChatMistralAI(
+    model_name="magistral-small-2509",
+    api_key="oJ6wgJeUMlciaLyoojF2OUancT1FoOAe"
+)
 
-
-# 6️⃣ Retriever ve LLM kısmı
-retriever = vector_db.as_retriever(search_kwargs={"k" : 100})
-llm = ChatMistralAI(model_name="magistral-small-2509",api_key="oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
 prompt = ChatPromptTemplate.from_messages([
-    ("system", "Sen bir yapay zeka asistanısın. Bu Belgeler hakkında sana soru sorulacak {context}"),
+    ("system", "Sen bir yapay zeka asistanısın. Bu belgeler hakkında sorular sorulacak: {context}"),
     ("human", "{input}"),
 ])
 
 combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
 rga_chain = create_retrieval_chain(retriever, combine_chain)
-print("işlem bitti")
 
+# ----------------------
+# Kullanıcı girişi ve chatbot yanıtı
+# ----------------------
+user_input = st.text_input("Soru yazın:")
 
+if user_input:
+    if user_input.lower() in ["1", "çık", "exit"]:
+        st.stop()
+    else:
+        # Belgelerden ilgili içerikleri çek
+        docs = retriever.get_relevant_documents(user_input)
+        st.write(f"Retrieved {len(docs)} documents")
+        for i, doc in enumerate(docs, 1):
+            st.write(f"--- Document {i} ---")
+            st.write(doc.page_content[:500])  # ilk 500 karakter
+            st.write("Metadata:", doc.metadata)
 
-while True:
-    mesaj = input("Soru sormak için buraya yazın (çıkmak için 1): ")
-    
-    if mesaj == "1":
-        print("Programdan çıkılıyor...")
-        break
-    
-    
-    docs = retriever.get_relevant_documents(mesaj) # Kullanıcının sorusuna en yakın belgeleri getirir isterse uzunluğu aluınabilir 
-    print(f"Retrieved {len(docs)} documents")
-
-    for i, doc in enumerate(docs, 1):
-        print(f"\n--- Document {i} ---")
-        print("Content:", doc.page_content[:500])  # İlk 500 karakterini göster
-        print("Metadata:", doc.metadata)
-
-    # vectordb\aa1bf15c-2132-4fc5-8849-730b2e89bbe6\data_level0.bin
-    # vectordb\sqlite3
-
-    # Sorguyu çalıştır
-    response = rga_chain.invoke({"input": mesaj})
-    
-    # Süreyi bitir
-    end = tm.time()
-
-    
-    print("AI'nın Cevabı Gemma D:", response["answer"])
-
-    # What does the US government expect of Bytedance ?
+        # LLM ile cevap üret
+        response = rga_chain.invoke({"input": user_input})
+        st.write("🤖 AI'nın cevabı:")
+        st.write(response["answer"])
 
 
