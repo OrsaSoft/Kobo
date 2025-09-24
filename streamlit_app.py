@@ -61,7 +61,7 @@ if used_question:
 
 
 
-combine_chain = create_stuff_documents_chain(llm=llm, prompt=used_question)
+combine_chain = create_stuff_documents_chain(llm=llm, prompt=prompt)
 rga_chain = create_retrieval_chain(retriever, combine_chain)
 print("işlem bitti")
 
