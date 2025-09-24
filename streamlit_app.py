@@ -20,60 +20,47 @@ from langchain.chains import ConversationalRetrievalChain
 
 print(f"LangChain version: {langchain.__version__}") # 0.3.27
 
-# Embeddings ve vector DB
 embeddings = HuggingFaceEmbeddings(model_name="sentence-transformers/all-MiniLM-L6-v2")
+
+api_key = os.environ.get("oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
+
 db_path = "vectordb"
-vector_db = Chroma(persist_directory=db_path, embedding_function=embeddings)
+
+vector_db = Chroma(persist_directory=db_path,embedding_function=embeddings)
+
 retriever = vector_db.as_retriever()
 
-# Streamlit session_state ile mesaj geçmişi
 if "messages" not in st.session_state:
-    st.session_state.messages = []  # Burada sadece (soru, cevap) tuple listesi
-    st.session_state.messages_history = []  # Kullanıcı ve asistan mesajları için
+    st.session_state.messages = []
+    mesaj = "You are an assistant for question-answering tasks"
+    st.session_state.messages.append(SystemMessage(content=mesaj))
 
-# Önceki mesajları göster
-for human_msg, ai_msg in st.session_state.messages_history:
-    with st.chat_message("user"):
-        st.markdown(human_msg)
-    with st.chat_message("assistant"):
-        st.markdown(ai_msg)
+for message in st.session_state.messages:
+    if isinstance(message,HumanMessage):
+        with st.chat_message("user"):
+            st.markdown(message.content)
+    
+    elif isinstance(message, AIMessage):
+            with st.chat_message("assistant"):
+                st.markdown(message.content)
 
-# Kullanıcıdan input al
-prompt = st.chat_input("Your question:")
+prompt = st.chat_input("Your question : ")
 
 if prompt:
     with st.chat_message("user"):
-        st.markdown(prompt)
+          st.markdown(prompt)
+          st.session_state.messages.append(HumanMessage(content=prompt))
 
-    # LLM, sistem prompt ile başlatılıyor
-    llm = ChatMistralAI(
-        model_name="magistral-small-2509",
-        api_key=os.environ.get("oJ6wgJeUMlciaLyoojF2OUancT1FoOAe"),
-        system_prompt="You are an assistant for question-answering tasks"
-    )
+    llm = ChatMistralAI(model_name="magistral-small-2509",api_key="oJ6wgJeUMlciaLyoojF2OUancT1FoOAe")
+     
+    qa_chain = ConversationalRetrievalChain.from_llm(llm=llm,retriever=retriever,return_source_documents=True)
 
-    # QA chain oluştur
-    qa_chain = ConversationalRetrievalChain.from_llm(
-        llm=llm,
-        retriever=retriever,
-        return_source_documents=True
-    )
-
-    # Chain'i çalıştır, chat_history sadece (soru, cevap) tuple listesi
-    result = qa_chain({
-        "question": prompt,
-        "chat_history": st.session_state.messages
-    })
-
-    answer = result["answer"]
+    result = qa_chain({"question": prompt,"chat_history": st.session_state.messages})
 
     with st.chat_message("assistant"):
-        st.markdown(answer)
-
-    # Mesajları güncelle
-    st.session_state.messages.append((prompt, answer))
-    st.session_state.messages_history.append((prompt, answer))
-
+         st.markdown(result["answer"])
+         st.session_state.messages.append(AIMessage(content=result["answer"]))
+         
 
 
 
