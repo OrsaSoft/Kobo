@@ -36,7 +36,7 @@ vector_db = Chroma(persist_directory=db_path,embedding_function=None)
 
 if "messages" not in st.session_state:
         st.session_state.messages = []
-        mesaj = "You are an assistant for question-answering tasks"
+        mesaj = "You are an assistant for question answering tasks"
         st.session_state.messages.append(SystemMessage(content=mesaj))
 
 
