@@ -21,8 +21,10 @@ from langchain.chains import create_retrieval_chain
 
 print(f"LangChain version: {langchain.__version__}") # 0.3.27
 
+api_key = os.environ.get("OLLAMA_API_KEY")
 
-embeddings = OllamaEmbeddings(model="mxbai-embed-large:latest")
+
+embeddings = OllamaEmbeddings(model="mxbai-embed-large:latest",api_key="26240656e79a4c8b84a3a202887281a1._HOQZKk6GJLWzZPcPYb-im5d")
 
 
 
